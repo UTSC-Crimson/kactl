@@ -1,70 +1,83 @@
 /**
- * Author: Joseph Durie
- * Date: 2020-10-11
- * Description: Remember that idT and idU must be idempotent
- * Time: O(\log N)
+ * Author: Andrew Tam
+ * Date: 2025-8-11
+ * Description: Lazy segment tree that supports adding and setting intervals.
+ * Can be changed to other things.
+ * Time: O(\log N).
+ * Status: trusted
  */
 #pragma once
 
-typedef ll T; T idT = {}; // node type
-typedef ll U; U idU = {}; // update type
-// combine segtree nodes a and b
-T f(T a, T b) { return a + b; }
-// apply updates f and g (f compose g)
-U g(U f, U g) { return f + g; }
-// apply update f to segtree node a
-T h(U f, T a) { return a + f; }
-struct lztree {
+template<typename Data,typename Aux>
+class LazySegmentTree{
+private:
 	int n;
-	vector<T> t;
-	vector<U> d;
-	lztree(int n) : n(n), t(2*n, idT), d(n, idU) {}
-	void calc(ll p) { t[p] = h(d[p], f(t[p * 2], t[p * 2 + 1])); }
-	void apply(ll p, U v) {
-		t[p] = h(v, t[p]);
-		if(p < n) d[p] = g(v, d[p]);
-	}
-	void push(ll p) {
-		p += n;
-		for(int s = 24; s > 0; s--) { // need tree height <= 24
-			ll i = p >> s;
-			if(d[i] != idU) {
-				apply(i * 2, d[i]);
-				apply(i * 2 + 1, d[i]);
-				d[i] = idU;
-			}
+	vector<Data>t;
+	vector<Aux>lz;
+	void build(int L,int R,int v,const vector<Data>&a){
+		if(L==R){
+			t[v]=a[L];return;
 		}
+		int M=(L+R)/2;
+		build(L,M,2*v,a);
+		build(M+1,R,2*v+1,a);
+		t[v]=Data::merge(t[2*v],t[2*v+1]);
 	}
-	void set(ll p, T v) { // point set arr[p] = v
-		push(p);
-		t[p += n] = v;
-		while(p > 1) calc(p /= 2);
+	void push(int v,int len){
+		lz[v].apply(t[2*v],lz[2*v],(len+1)/2);
+		lz[v].apply(t[2*v+1],lz[2*v+1],len/2);
+		lz[v]=Aux();
 	}
-	T get(ll p) { // return arr[p]
-        push(p);
-        return t[p + n];
-    }
-	void update(ll l, ll r, U v) { // range update [l, r) using v
-		push(l), push(r - 1);
-		bool cl = false, cr = false;
-		for(l += n, r += n; l < r; l /= 2, r /= 2) {
-			if(cl) calc(l - 1);
-			if(cr) calc(r);
-			if(l & 1) apply(l++, v), cl = true;
-			if(r & 1) apply(--r, v), cr = true;
+	void update(int qL,int qR,const Aux&val,int L,int R,int v){
+		if(qL<=L && R<=qR){
+			val.apply(t[v],lz[v],R-L+1);return;
 		}
-		for(--l; r; l /= 2, r /= 2) {
-			if(cl) calc(l);
-			if(cr) calc(r);
-		}
+		if(qR<L || R<qL)return;
+		push(v,R-L+1);
+		int M=(L+R)/2;
+		update(qL,qR,val,L,M,2*v);
+		update(qL,qR,val,M+1,R,2*v+1);
+		t[v]=Data::merge(t[2*v],t[2*v+1]);
 	}
-	T query(ll l, ll r) { // range query [l, r)
-		push(l), push(r - 1);
-		T resl = idT, resr = idT;
-		for(l += n, r += n; l < r; l /= 2, r /= 2) {
-			if(l & 1) resl = f(resl, t[l++]);
-			if(r & 1) resr = f(t[--r], resr);
+	Data query(int qL,int qR,int L,int R,int v){
+		if(qL<=L && R<=qR)return t[v];
+		if(qR<L || R<qL)return Data();
+		push(v,R-L+1);
+		int M=(L+R)/2;
+		return Data::merge(query(qL,qR,L,M,2*v),query(qL,qR,M+1,R,2*v+1));
+	}
+public:
+	LazySegmentTree(int n):n(n){
+		t.resize(4*n);lz.resize(4*n);
+	}LazySegmentTree(int n,const vector<Data>&a):n(n){
+		t.resize(4*n);lz.resize(4*n);
+		build(1,n,1,a);
+	}void update(int qL,int qR,const Aux&val){update(qL,qR,val,1,n,1);}
+	Data query(int qL,int qR){return query(qL,qR,1,n,1);}
+};
+
+struct Data{
+	int v;
+	Data(int v):v(v){}
+	Data():v(0){}
+	static Data merge(const Data&data1,const Data&data2){
+		return Data(data1.v+data2.v);
+	};
+};
+
+struct Aux{
+	int add,set;
+	Aux(int add,int set):add(add),set(set){}
+	Aux():add(0),set(-1){}
+	void apply(Data&data,Aux&aux,int len) const{
+		if(set!=-1){
+			data.v=len*set;
+			aux.set=set;
+			aux.add=0;
+			return;
 		}
-		return f(resl, resr);
+		data.v+=len*add;
+		if(aux.set!=-1)aux.set+=add;
+		else aux.add+=add;
 	}
 };
