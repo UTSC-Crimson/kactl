@@ -4,7 +4,7 @@ using namespace std;
 #define int long long
 #define rep(i, a, b) for(int i = a; i < (b); ++i)
 #define all(x) begin(x), end(x)
-#define sz(x) (int)ssize(x)
+#define sz(x) (int)(x).size()
 using ll = long long;
 using pii = pair<int, int>;
 using vi = vector<int>;
