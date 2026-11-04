@@ -6,7 +6,7 @@ add_compile_options(-Wall -g -fsanitize=address,undefined
 	-fno-sanitize-recover=all -D_GLIBCXX_DEBUG)
 add_link_options(-fsanitize=address,undefined)
 
-file(GLOB SOURCES CONFIGURE_DEPENDS "*.cpp")
+file(GLOB SOURCES "*.cpp")
 foreach(f ${SOURCES})
   get_filename_component(name ${f} NAME_WE)
   add_executable(${name} ${f})
