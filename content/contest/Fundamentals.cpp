@@ -5,14 +5,14 @@ ll modpow(ll b, ll e) {
 		if (e & 1) ans = ans * b % mod;
 	return ans;
 }
-ll fac[LIM], ifac[LIM], inv[LIM], lp[LIM], mu[LIM], phi[LIM];
+ll fac[LIM], ifac[LIM], iv[LIM], lp[LIM], mu[LIM], phi[LIM];
 vi pr; // lp[i] = smallest prime factor of i
 void init() { // call once at start
-	inv[1] = fac[0] = fac[1] = ifac[0] = ifac[1] = 1;
+	iv[1] = fac[0] = fac[1] = ifac[0] = ifac[1] = 1;
 	rep(i,2,LIM) {
-		inv[i] = mod - mod / i * inv[mod % i] % mod;
+		iv[i] = mod - mod / i * iv[mod % i] % mod;
 		fac[i] = fac[i-1] * i % mod;
-		ifac[i] = ifac[i-1] * inv[i] % mod;
+		ifac[i] = ifac[i-1] * iv[i] % mod;
 	}
 	// linear sieve; uncomment for mobius (mu) and totient (phi)
 	// mu[1] = phi[1] = 1;
@@ -45,4 +45,4 @@ ll starsAndBars(ll n, ll k) {
 	return comb(n + k - 1, k - 1);
 }
 ll catalan(ll n) {
-	return n < 0 ? 0 : comb(2 * n, n) * inv[n + 1] % mod; }
+	return n < 0 ? 0 : comb(2 * n, n) * iv[n + 1] % mod; }
