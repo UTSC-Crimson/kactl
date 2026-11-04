@@ -16,6 +16,8 @@ struct chash { // large odd number for C
 	ll operator()(ll x) const { return __builtin_bswap64(x*C); }
 };
 __gnu_pbds::gp_hash_table<ll,int,chash> h({},{},{},{},{1<<16});
+// No h.count(x) or h.contains(x): use h.find(x) != h.end().
+// Integer keys only; pair (a, b) -> a * M + b with 0 <= b < M.
 
 /** For CodeForces, or other places where hacking might be a problem:
 
