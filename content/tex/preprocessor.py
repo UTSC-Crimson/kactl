@@ -145,14 +145,7 @@ def processwithcomments(caption, instream, outstream, listingslang):
         nsource = nsource.rstrip() + source[end:]
     nsource = nsource.strip()
 
-    if listingslang in ['C++', 'Java']:
-        hash_script = 'hash'
-        p = subprocess.Popen(['sh', 'content/contest/%s.sh' % hash_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE, encoding="utf-8")
-        hsh, _ = p.communicate(nsource)
-        hsh = hsh.split(None, 1)[0]
-        hsh = hsh + ', '
-    else:
-        hsh = ''
+    hsh = gethash(nsource, listingslang)
     # Produce output
     out = []
     if warning:
@@ -181,11 +174,20 @@ def processwithcomments(caption, instream, outstream, listingslang):
     for line in out:
         print(line, file=outstream)
 
+def gethash(source, listingslang):
+    if listingslang not in ['C++', 'Java']:
+        return ''
+    hash_script = 'hash'
+    p = subprocess.Popen(['sh', 'content/contest/%s.sh' % hash_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE, encoding="utf-8")
+    hsh, _ = p.communicate(source)
+    hsh = hsh.split(None, 1)[0]
+    return hsh + ', '
+
 def processraw(caption, instream, outstream, listingslang = 'raw'):
     try:
         source = instream.read().strip()
         addref(caption, outstream)
-        print(r"\rightcaption{%d lines}" % len(source.split("\n")), file=outstream)
+        print(r"\rightcaption{%s%d lines}" % (gethash(source, listingslang), len(source.split("\n"))), file=outstream)
         print(r"\begin{lstlisting}[language=%s,caption={%s}]" % (listingslang, pathescape(caption)), file=outstream)
         print(source, file=outstream)
         print(r"\end{lstlisting}", file=outstream)
