@@ -44,3 +44,10 @@ void bitsetReference(int i, int k, ll x, string s) {
 	// count() is ~3x faster with #pragma GCC target("popcnt")
 	// at the top of the file. Judges discourage pragmas
 }
+// Dynamic size: run(n) uses bitset<len>, len = smallest power
+// of 2 >= n. Ops cost O(n/64) instead of O(MAXN/64).
+const int MAXN = 1 << 20; // power of 2, >= largest n
+template<int len = 1> void run(int n) {
+	if (len < n) return run<min(len * 2, MAXN)>(n);
+	bitset<len> d; // solve here using d
+}
