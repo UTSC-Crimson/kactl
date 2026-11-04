@@ -34,6 +34,7 @@ void init() { // call once at start
 }
 ll perm(ll n, ll k) { // ordered k of n, 0 if k < 0 or k > n
 	if (k < 0 || k > n) return 0;
+	assert(n < LIM);
 	return fac[n] * ifac[n-k] % mod;
 }
 ll comb(ll n, ll k) { // n choose k
@@ -43,4 +44,5 @@ ll starsAndBars(ll n, ll k) {
 	if (k == 0) return n == 0;
 	return comb(n + k - 1, k - 1);
 }
-ll catalan(ll n) { return comb(2 * n, n) * inv[n + 1] % mod; }
+ll catalan(ll n) {
+	return n < 0 ? 0 : comb(2 * n, n) * inv[n + 1] % mod; }
