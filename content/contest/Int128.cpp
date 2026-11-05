@@ -1,18 +1,11 @@
-// Build gnu++23 (CMake default): -std=c++23 breaks abs(L),
-// is_integral_v<L>, and <bit> functions on UL.
-typedef __int128 L; typedef unsigned __int128 UL;
-typedef unsigned long long ull;
-// No 128-bit literals: (L)1 << 100. Cast BEFORE multiply:
-// (L)a * b. Halves: (ull)x, (ull)(x >> 64). numeric_limits<L>
-// works. Bits (GCC 14): __builtin_popcountg(x),
-// __builtin_ctzg(x, 128), __builtin_clzg(x, 128): 128 if 0
-// println("{}", x) and format work. No cin >> x, so:
-L read() {
-	string s; cin >> s; L x = 0; // negative: handles min()
-	for (char c : s) if (c != '-') x = x * 10 - (c - '0');
-	return s[0] == '-' ? x : -x;
-}
-ull modmul(ull a, ull b, ull m) { return (UL)a * b % m; }
+// __int128 / unsigned __int128 (gnu++23, GCC 14):
+// No literals: (__int128)1 << 100. Cast BEFORE multiplying:
+// (__int128)a * b, not (__int128)(a * b).
+// Print: println("{}", x). No cin >> x (use Python instead).
+// Halves: (uint64_t)x, (uint64_t)(x >> 64).
+// numeric_limits<__int128> works.
+// Bits: __builtin_popcountg(x), __builtin_ctzg(x, 128),
+// __builtin_clzg(x, 128) (2nd arg is returned when x == 0).
 // __builtin_{add,sub,mul}_overflow(a, b, &r): true on
 // overflow, r = wrapped result. Range is r's type, so
 // int * int into ll never overflows. e.g. capped lcm:
